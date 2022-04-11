@@ -1,0 +1,41 @@
+select '201412'||lpad(trim(ngay),2,'0') namthangngay, substr(trim(TH12),4,2) kq from XSMB2014 where TH12 is not null;
+select * from XSMB2019;
+select * from ailotter order by ngay desc; --truncate table ailotter
+
+declare
+  ti_cnt     integer;
+  sql_insert varchar2(1000);
+begin
+  for c1 in (select table_name,
+                    column_name,
+                    substr(table_name, 5, 4) nam,
+                    substr(column_name, 3, 2) thang
+               from user_tab_columns
+              where table_name in ('XSMB2019',
+                                   'XSMB2018',
+                                   'XSMB2017',
+                                   'XSMB2016',
+                                   'XSMB2015',
+                                   'XSMB2014',
+                                   'XSMB2013',
+                                   'XSMB2012',
+                                   'XSMB2011',
+                                   'XSMB2010',
+                                   'XSMB2009',
+                                   'XSMB2008',
+                                   'XSMB2007',
+                                   'XSMB2006',
+                                   'XSMB2005',
+                                   'XSMB2004',
+                                   'XSMB2003',
+                                   'XSMB2002')
+                and column_name like 'TH%'
+              order by table_name desc, column_name) loop
+    sql_insert := 'insert into AILOTTER select ''' || c1.nam || c1.thang ||
+                  '''||lpad(trim(ngay),2,''0'') namthangngay, substr(trim(' || c1.column_name ||
+                  '),4,2) kq from ' || c1.table_name || ' where ' || c1.column_name || ' is not null';
+    --dbms_output.put_line(sql_insert);
+    execute immediate sql_insert;
+    commit;
+  end loop;
+end;
